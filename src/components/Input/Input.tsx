@@ -68,7 +68,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     // Use local ref and forward it to maintain proper ref handling
     const localRef = useRef<HTMLInputElement>(null);
-    useImperativeHandle(ref, () => localRef.current!);
+
+    // Forward ref properly to support both object refs and callback refs
+    useImperativeHandle(ref, () => localRef.current);
 
     const [internalValue, setInternalValue] = useState(defaultValue || '');
     const [isFocused, setIsFocused] = useState(false);
