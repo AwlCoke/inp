@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, forwardRef, useId } from 'react';
+import React, { useState, useCallback, useMemo, forwardRef, useId, useRef, useImperativeHandle } from 'react';
 import { InputProps, InputState } from './types';
 import { Icon } from '../ui/Icon';
 import { theme } from '../../theme';
@@ -65,7 +65,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const generatedId = useId();
     const inputId = providedId || `input-${generatedId}`;
     const descriptionId = `${inputId}-description`;
-    
+
+    // Use local ref and forward it to maintain proper ref handling
+    const localRef = useRef<HTMLInputElement>(null);
+
+    // Forward ref properly to support both object refs and callback refs
+    useImperativeHandle(ref, () => localRef.current);
+
     const [internalValue, setInternalValue] = useState(defaultValue || '');
     const [isFocused, setIsFocused] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
@@ -131,11 +137,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }, []);
 
     const handleContainerClick = useCallback(() => {
-      const inputElement = (ref as React.RefObject<HTMLInputElement>)?.current;
-      if (inputElement && !disabled) {
-        inputElement.focus();
+      if (localRef.current && !disabled) {
+        localRef.current.focus();
       }
-    }, [ref, disabled]);
+    }, [disabled]);
 
     // Render hidden value (dots)
     const renderHiddenValue = () => {
@@ -360,7 +365,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               renderHiddenValue()
             ) : (
               <NativeInput
-                ref={ref}
+                ref={localRef}
                 id={inputId}
                 type={hidden ? 'password' : type}
                 value={controlledValue}
